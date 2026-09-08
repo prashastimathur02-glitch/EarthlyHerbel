@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ product.name }} | EarthlyHerbel
+{% endblock %}
+
+{% block content %}
+
+<section class="product-page">
+
+    <div class="container">
+
+        <a href="{{ url_for('main.shop') }}" class="back-link">
+            ← Back to shop
+        </a>
+
+        <div class="product-detail">
+
+            <!-- Product Image -->
+            <div class="product-detail-image">
+
+                <div class="product-image-placeholder">
+                    <span>EarthlyHerbel</span>
+                    <small>Product Image</small>
+                </div>
+
+            </div>
+
+
+            <!-- Product Information -->
+            <div class="product-detail-info">
+
+                <p class="product-category">
+                    {{ product.category }}
+                </p>
+
+                <h1>
+                    {{ product.name }}
+                </h1>
+
+                <div class="detail-rating">
+                    ★ {{ product.rating }}
+                    <span>Customer rating</span>
+                </div>
+
+
+                <!-- Price -->
+                <div class="detail-price">
+
+                    <span class="detail-current-price">
+                        ₹{{ product.price }}
+                    </span>
+
+                    <span class="detail-original-price">
+                        ₹{{ product.original_price }}
+                    </span>
+
+                    <span class="discount">
+                        {{ discount }}% OFF
+                    </span>
+
+                </div>
+
+
+                <p class="detail-description">
+                    {{ product.description }}
+                </p>
+
+
+                <!-- Stock -->
+                {% if product.stock > 0 %}
+
+                <p class="detail-stock">
+                    ✓ In stock
+                </p>
+
+                {% else %}
+
+                <p class="detail-stock out-of-stock">
+                    Currently out of stock
+                </p>
+
+                {% endif %}
+
+
+                <!-- Quantity -->
+                <div class="quantity-section">
+
+                    <label for="quantity">
+                        Quantity
+                    </label>
+
+                    <div class="quantity-control">
+
+                        <button
+                            type="button"
+                            id="decrease"
+                            aria-label="Decrease quantity"
+                        >
+                            −
+                        </button>
+
+                        <input
+                            type="number"
+                            id="quantity"
+                            value="1"
+                            min="1"
+                            max="{{ product.stock }}"
+                            aria-label="Product quantity"
+                        >
+
+                        <button
+                            type="button"
+                            id="increase"
+                            aria-label="Increase quantity"
+                        >
+                            +
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Actions -->
+                <div class="detail-actions">
+
+                    <button
+                        type="button"
+                        class="button button-primary"
+                        id="add-to-cart"
+                    >
+                        Add to Cart
+                    </button>
+
+                    <button
+                        type="button"
+                        class="button button-secondary"
+                        id="buy-now"
+                    >
+                        Buy Now
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Product Information -->
+        <div class="product-information">
+
+            <!-- Ingredients -->
+            <div class="information-block">
+
+                <p class="information-label">
+                    What's inside
+                </p>
+
+                <h2>
+                    Ingredients
+                </h2>
+
+                <p>
+                    {{ product.ingredients }}
+                </p>
+
+            </div>
+
+
+            <!-- Benefits -->
+            <div class="information-block">
+
+                <p class="information-label">
+                    Why you'll love it
+                </p>
+
+                <h2>
+                    Benefits
+                </h2>
+
+                <ul>
+
+                    {% for benefit in product.benefits %}
+
+                    <li>
+                        {{ benefit }}
+                    </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+
+            <!-- How to use -->
+            <div class="information-block">
+
+                <p class="information-label">
+                    Your ritual
+                </p>
+
+                <h2>
+                    How to use
+                </h2>
+
+                <p>
+                    {{ product.how_to_use }}
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<script>
+
+const quantityInput = document.getElementById("quantity");
+const decreaseButton = document.getElementById("decrease");
+const increaseButton = document.getElementById("increase");
+
+if (quantityInput && decreaseButton && increaseButton) {
+
+    decreaseButton.addEventListener("click", () => {
+
+        let quantity = parseInt(quantityInput.value) || 1;
+
+        if (quantity > 1) {
+            quantityInput.value = quantity - 1;
+        }
+
+    });
+
+
+    increaseButton.addEventListener("click", () => {
+
+        let quantity = parseInt(quantityInput.value) || 1;
+        const maximum = parseInt(quantityInput.max);
+
+        if (quantity < maximum) {
+            quantityInput.value = quantity + 1;
+        }
+
+    });
+
+}
+
+</script>
+
+{% endblock %}

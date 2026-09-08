@@ -1,17 +1,198 @@
 {% extends "base.html" %}
 
 {% block title %}
-EarthlyHerbel | Test
+EarthlyHerbel | Natural Haircare & Skincare
 {% endblock %}
 
 {% block content %}
 
-<div class="container">
-    <h1>EarthlyHerbel</h1>
+<!-- Hero Section -->
+<section class="hero">
 
-    <p>
-        CSS is connected successfully.
-    </p>
-</div>
+    <div class="container hero-content">
+
+        <div class="hero-text">
+
+            <p class="eyebrow">
+                Naturally rooted. Thoughtfully made.
+            </p>
+
+            <h1>
+                Simple care,<br>
+                rooted in nature.
+            </h1>
+
+            <p class="hero-description">
+                Discover mindful haircare and skincare inspired by
+                the goodness of nature and made for everyday Indian routines.
+            </p>
+
+            <div class="hero-actions">
+
+                <a
+                    href="{{ url_for('main.shop') }}"
+                    class="button button-primary"
+                >
+                    Shop Haircare
+                </a>
+
+                <a
+                    href="{{ url_for('main.shop') }}"
+                    class="button button-secondary"
+                >
+                    Explore Skincare
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- Categories Section -->
+<section class="categories">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <p class="eyebrow">
+                Explore our care
+            </p>
+
+            <h2>
+                Made for your everyday ritual
+            </h2>
+
+            <p>
+                Thoughtfully selected haircare and skincare for simple,
+                nourishing routines.
+            </p>
+
+        </div>
+
+
+        <div class="category-grid">
+
+            <a
+                href="{{ url_for('main.shop') }}"
+                class="category-card"
+            >
+
+                <div class="category-content">
+
+                    <p class="category-label">
+                        Haircare
+                    </p>
+
+                    <h3>
+                        Nourish your hair
+                    </h3>
+
+                    <span>
+                        Explore Haircare →
+                    </span>
+
+                </div>
+
+            </a>
+
+
+            <a
+                href="{{ url_for('main.shop') }}"
+                class="category-card"
+            >
+
+                <div class="category-content">
+
+                    <p class="category-label">
+                        Skincare
+                    </p>
+
+                    <h3>
+                        Care for your skin
+                    </h3>
+
+                    <span>
+                        Explore Skincare →
+                    </span>
+
+                </div>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- Brand Values Section -->
+<section class="values">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <p class="eyebrow">
+                Why EarthlyHerbel
+            </p>
+
+            <h2>
+                Nature at the heart of your routine
+            </h2>
+
+        </div>
+
+
+        <div class="values-grid">
+
+            <div class="value-card">
+
+                <h3>
+                    Thoughtful ingredients
+                </h3>
+
+                <p>
+                    We focus on ingredients chosen with care and purpose.
+                </p>
+
+            </div>
+
+
+            <div class="value-card">
+
+                <h3>
+                    Everyday simplicity
+                </h3>
+
+                <p>
+                    Effective care designed to fit naturally into your routine.
+                </p>
+
+            </div>
+
+
+            <div class="value-card">
+
+                <h3>
+                    Rooted in nature
+                </h3>
+
+                <p>
+                    Inspired by nature and the traditional care we know and love.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
 
 {% endblock %}

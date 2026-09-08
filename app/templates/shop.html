@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}
+Shop | EarthlyHerbel
+{% endblock %}
+
+{% block content %}
+
+<section class="shop-page">
+
+    <div class="container">
+
+        <div class="section-heading shop-heading">
+            <p class="eyebrow">EarthlyHerbel Collection</p>
+
+            <h1>
+                Discover your natural care ritual
+            </h1>
+
+            <p>
+                Explore thoughtfully crafted haircare and skincare
+                inspired by nature.
+            </p>
+        </div>
+
+
+        <!-- Shop Controls -->
+
+        <div class="shop-controls">
+
+            <div class="shop-search">
+                <input
+                    type="search"
+                    placeholder="Search products..."
+                    aria-label="Search products"
+                >
+            </div>
+
+            <div class="shop-filter">
+
+                <select aria-label="Filter products by category">
+
+                    <option value="all">
+                        All Products
+                    </option>
+
+                    <option value="haircare">
+                        Haircare
+                    </option>
+
+                    <option value="skincare">
+                        Skincare
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- Product Grid -->
+
+        <div class="product-grid">
+
+            {% for product in products %}
+
+            <article class="product-card">
+
+                <div class="product-image">
+
+                    <span>
+                        Product image
+                    </span>
+
+                </div>
+
+
+                <div class="product-info">
+
+                    <p class="product-category">
+                        {{ product.category }}
+                    </p>
+
+                    <h2>
+                        {{ product.name }}
+                    </h2>
+
+                    <div class="product-rating">
+                        ★ {{ product.rating }}
+                    </div>
+
+                    <div class="product-price">
+
+                        <span class="current-price">
+                            ₹{{ product.price }}
+                        </span>
+
+                        <span class="original-price">
+                            ₹{{ product.original_price }}
+                        </span>
+
+                    </div>
+
+                    {% if product.stock > 0 %}
+
+                    <p class="stock-status">
+                        In stock
+                    </p>
+
+                    {% else %}
+
+                    <p class="stock-status out-of-stock">
+                        Out of stock
+                    </p>
+
+                    {% endif %}
+
+                    <a
+                    href="{{ url_for('main.product_detail', product_id=product.id) }}"
+                    class="button button-primary product-button"
+                    >View Product
+                </a>
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
