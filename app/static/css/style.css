@@ -1,0 +1,39 @@
+:root {
+    --primary: #3f5b45;
+    --primary-dark: #2d4333;
+    --cream: #f8f5ee;
+    --white: #ffffff;
+    --text: #252a25;
+    --text-light: #666b65;
+    --border: #e5e0d5;
+
+    --container: 1200px;
+    --radius: 8px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--text);
+    line-height: 1.6;
+    background: var(--white);
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.container {
+    width: min(92%, var(--container));
+    margin: 0 auto;
+}
