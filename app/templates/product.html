@@ -126,12 +126,15 @@
                 <div class="detail-actions">
 
                     <button
-                        type="button"
-                        class="button button-primary"
-                        id="add-to-cart"
+                    type="button"
+                    class="button button-primary"
+                    id="add-to-cart"
+                    data-product-id="{{ product.id }}"
+                    data-product-name="{{ product.name }}"
+                    data-product-price="{{ product.price }}"
                     >
-                        Add to Cart
-                    </button>
+                    Add to Cart
+                </button>
 
                     <button
                         type="button"

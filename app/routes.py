@@ -85,6 +85,9 @@ def home():
 def shop():
     return render_template("shop.html", products=products)
 
+@main.route("/cart")
+def cart():
+    return render_template("cart.html")
 
 @main.route("/product/<int:product_id>")
 def product_detail(product_id):
