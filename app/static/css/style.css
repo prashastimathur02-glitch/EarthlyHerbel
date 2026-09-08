@@ -37,3 +37,119 @@ a {
     width: min(92%, var(--container));
     margin: 0 auto;
 }
+/* ========================================
+   HEADER / NAVBAR
+   ======================================== */
+
+.site-header {
+    border-bottom: 1px solid var(--border);
+    background: var(--white);
+}
+
+.navbar {
+    min-height: 76px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+.brand {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary);
+    white-space: nowrap;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+.nav-links a,
+.nav-actions a {
+    font-size: 0.92rem;
+    color: var(--text);
+    transition: color 0.2s ease;
+}
+
+.nav-links a:hover,
+.nav-actions a:hover {
+    color: var(--primary);
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.mobile-menu-button {
+    display: none;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+
+/* ========================================
+   FOOTER
+   ======================================== */
+
+.site-footer {
+    margin-top: 80px;
+    padding: 30px 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+}
+
+
+/* ========================================
+   RESPONSIVE NAVBAR
+   ======================================== */
+
+@media (max-width: 800px) {
+
+    .nav-links,
+    .nav-actions {
+        display: none;
+    }
+
+    .mobile-menu-button {
+        display: block;
+    }
+
+    .navbar {
+        min-height: 68px;
+    }
+
+}
+/* ========================================
+   MOBILE NAVIGATION
+   ======================================== */
+
+.mobile-nav {
+    display: none;
+    flex-direction: column;
+    border-top: 1px solid var(--border);
+    background: var(--white);
+}
+
+.mobile-nav a {
+    padding: 14px 5%;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
+}
+
+.mobile-nav a:hover {
+    background: var(--cream);
+    color: var(--primary);
+}
+
+.mobile-nav.active {
+    display: flex;
+}
