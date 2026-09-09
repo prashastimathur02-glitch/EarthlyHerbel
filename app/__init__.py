@@ -1,5 +1,10 @@
 from flask import Flask
+from dotenv import load_dotenv
+
 from app.config import Config
+
+
+load_dotenv()
 
 
 def create_app():
