@@ -1,6 +1,16 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for
+
+from werkzeug.security import generate_password_hash, check_password_hash
+
+from flask_login import (
+    login_user,
+    logout_user,
+    login_required,
+    current_user
+)
 
 from app.database import get_db_connection
+from app import User
 
 
 main = Blueprint("main", __name__)
@@ -18,6 +28,7 @@ def shop():
 
     try:
         with connection.cursor() as cursor:
+
             cursor.execute("""
                 SELECT
                     id,
@@ -80,6 +91,7 @@ def product_detail(product_id):
 
     try:
         with connection.cursor() as cursor:
+
             cursor.execute("""
                 SELECT
                     id,
@@ -133,24 +145,264 @@ def product_detail(product_id):
     )
 
 
+@main.route("/register", methods=["GET", "POST"])
+@main.route("/register", methods=["GET", "POST"])
+def register():
+
+    if request.method == "GET":
+        return render_template("register.html")
+
+    name = request.form.get("name", "").strip()
+    email = request.form.get("email", "").strip().lower()
+    phone = request.form.get("phone", "").strip()
+    password = request.form.get("password", "")
+
+    if not name or not email or not password:
+        return render_template(
+            "register.html",
+            error="Name, email and password are required."
+        )
+
+    if len(password) < 8:
+        return render_template(
+            "register.html",
+            error="Password must be at least 8 characters."
+        )
+
+    password_hash = generate_password_hash(password)
+
+    connection = get_db_connection()
+
+    try:
+
+        with connection.cursor() as cursor:
+
+            cursor.execute(
+                """
+                SELECT id, password_hash
+                FROM customers
+                WHERE email = %s
+                """,
+                (email,)
+            )
+
+            existing_customer = cursor.fetchone()
+
+            if existing_customer:
+
+                customer_id = existing_customer[0]
+                existing_password_hash = existing_customer[1]
+
+                if existing_password_hash:
+                    return render_template(
+                        "register.html",
+                        error="An account with this email already exists."
+                    )
+
+                cursor.execute(
+                    """
+                    UPDATE customers
+                    SET
+                        name = %s,
+                        phone = %s,
+                        password_hash = %s
+                    WHERE id = %s
+                    """,
+                    (
+                        name,
+                        phone,
+                        password_hash,
+                        customer_id
+                    )
+                )
+
+            else:
+
+                cursor.execute(
+                    """
+                    INSERT INTO customers
+                        (name, email, phone, password_hash)
+                    VALUES
+                        (%s, %s, %s, %s)
+                    RETURNING id
+                    """,
+                    (
+                        name,
+                        email,
+                        phone,
+                        password_hash
+                    )
+                )
+
+                customer_id = cursor.fetchone()[0]
+
+        connection.commit()
+
+    except Exception as error:
+
+        connection.rollback()
+
+        print("Registration error:", error)
+
+        return render_template(
+            "register.html",
+            error="Unable to create account right now."
+        )
+
+    finally:
+        connection.close()
+
+    user = User(
+        customer_id,
+        name,
+        email
+    )
+
+    login_user(user)
+
+    return redirect(url_for("main.account"))
+
+@main.route("/login", methods=["GET", "POST"])
+def login():
+
+    if request.method == "GET":
+        return render_template("login.html")
+
+    email = request.form.get("email", "").strip().lower()
+    password = request.form.get("password", "")
+
+    if not email or not password:
+        return render_template(
+            "login.html",
+            error="Email and password are required."
+        )
+
+    connection = get_db_connection()
+
+    try:
+
+        with connection.cursor() as cursor:
+
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    name,
+                    email,
+                    password_hash
+                FROM customers
+                WHERE email = %s
+                """,
+                (email,)
+            )
+
+            row = cursor.fetchone()
+
+    finally:
+        connection.close()
+
+    if row is None or not row[3]:
+
+        return render_template(
+            "login.html",
+            error="Invalid email or password."
+        )
+
+    if not check_password_hash(row[3], password):
+
+        return render_template(
+            "login.html",
+            error="Invalid email or password."
+        )
+
+    user = User(
+        row[0],
+        row[1],
+        row[2]
+    )
+
+    login_user(user)
+
+    return redirect(url_for("main.account"))
+
+
+@main.route("/logout")
+@login_required
+def logout():
+
+    logout_user()
+
+    return redirect(url_for("main.home"))
+
+
+@main.route("/account")
+@login_required
+def account():
+
+    connection = get_db_connection()
+
+    try:
+
+        with connection.cursor() as cursor:
+
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    total_amount,
+                    status,
+                    shipping_address,
+                    created_at
+                FROM orders
+                WHERE customer_id = %s
+                ORDER BY created_at DESC
+                """,
+                (int(current_user.id),)
+            )
+
+            rows = cursor.fetchall()
+
+    finally:
+        connection.close()
+
+    orders = []
+
+    for row in rows:
+
+        orders.append({
+            "id": row[0],
+            "total_amount": float(row[1]),
+            "status": row[2],
+            "shipping_address": row[3],
+            "created_at": row[4]
+        })
+
+    return render_template(
+        "account.html",
+        orders=orders
+    )
+
+
 @main.route("/api/orders", methods=["POST"])
 def create_order():
 
     data = request.get_json(silent=True) or {}
 
     name = data.get("name", "").strip()
-    email = data.get("email", "").strip()
+    email = data.get("email", "").strip().lower()
     phone = data.get("phone", "").strip()
     address = data.get("address", "").strip()
     items = data.get("items", [])
 
     if not name or not email or not phone or not address:
+
         return jsonify({
             "success": False,
             "message": "All customer details are required."
         }), 400
 
     if not isinstance(items, list) or not items:
+
         return jsonify({
             "success": False,
             "message": "Your cart is empty."
@@ -159,7 +411,9 @@ def create_order():
     requested_items = {}
 
     try:
+
         for item in items:
+
             product_id = int(item["id"])
             quantity = int(item["quantity"])
 
@@ -171,6 +425,7 @@ def create_order():
             )
 
     except (KeyError, TypeError, ValueError):
+
         return jsonify({
             "success": False,
             "message": "Invalid cart items."
@@ -212,6 +467,7 @@ def create_order():
             for product_id in product_ids:
 
                 if product_id not in products_by_id:
+
                     return jsonify({
                         "success": False,
                         "message": "One or more products are unavailable."
@@ -225,6 +481,7 @@ def create_order():
                 product = products_by_id[product_id]
 
                 if quantity > product["stock"]:
+
                     return jsonify({
                         "success": False,
                         "message": (
@@ -259,7 +516,11 @@ def create_order():
                     phone = EXCLUDED.phone
                 RETURNING id
                 """,
-                (name, email, phone)
+                (
+                    name,
+                    email,
+                    phone
+                )
             )
 
             customer_id = cursor.fetchone()[0]
@@ -371,7 +632,7 @@ def order_success(order_id):
 
     order = {
         "id": row[0],
-        "total_amount": row[1],
+        "total_amount": float(row[1]),
         "status": row[2],
         "created_at": row[3]
     }

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}
+Login | EarthlyHerbel
+{% endblock %}
+
+{% block content %}
+
+<section class="auth-page">
+
+    <div class="container">
+
+        <div class="auth-card">
+
+            <div class="section-heading">
+
+                <p class="eyebrow">
+                    Welcome back
+                </p>
+
+                <h1>
+                    Login
+                </h1>
+
+                <p>
+                    Access your EarthlyHerbel account and orders.
+                </p>
+
+            </div>
+
+            {% if error %}
+
+            <div class="auth-error">
+                {{ error }}
+            </div>
+
+            {% endif %}
+
+            <form method="POST" class="auth-form">
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        required
+                        autocomplete="email"
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        required
+                        autocomplete="current-password"
+                    >
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="button button-primary auth-submit"
+                >
+                    Login
+                </button>
+
+            </form>
+
+            <p class="auth-footer">
+                Don't have an account?
+
+                <a href="{{ url_for('main.register') }}">
+                    Create Account
+                </a>
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
