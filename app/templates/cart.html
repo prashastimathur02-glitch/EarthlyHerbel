@@ -184,14 +184,14 @@ function renderCart() {
                 </div>
 
 
-                <button
-                    type="button"
-                    class="button button-primary checkout-button"
+                <a
+                href="{{ url_for('main.checkout') }}"
+                class="button button-primary checkout-button"
                 >
-                    Proceed to Checkout
-                </button>
-
-            </div>
+                Proceed to Checkout
+                </a>
+                
+                </div>
 
         </div>
 

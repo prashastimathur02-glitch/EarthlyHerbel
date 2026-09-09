@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}
+Checkout | EarthlyHerbel
+{% endblock %}
+
+{% block content %}
+
+<section class="checkout-page">
+
+    <div class="container">
+
+        <div class="section-heading">
+            <p class="eyebrow">Almost there</p>
+
+            <h1>Checkout</h1>
+
+            <p>
+                Enter your details to place your EarthlyHerbel order.
+            </p>
+        </div>
+
+
+        <div class="checkout-layout">
+
+            <!-- Customer Details -->
+
+            <div class="checkout-form">
+
+                <h2>Customer Details</h2>
+
+                <form id="checkout-form">
+
+                    <div class="form-group">
+
+                        <label for="name">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            required
+                            placeholder="Your full name"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="email">
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            required
+                            placeholder="you@example.com"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="phone">
+                            Phone Number
+                        </label>
+
+                        <input
+                            type="tel"
+                            id="phone"
+                            name="phone"
+                            required
+                            placeholder="10-digit mobile number"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="address">
+                            Delivery Address
+                        </label>
+
+                        <textarea
+                            id="address"
+                            name="address"
+                            rows="5"
+                            required
+                            placeholder="House/Flat, Street, City, State, PIN"
+                        ></textarea>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="button button-primary checkout-submit"
+                    >
+                        Place Order
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            <!-- Order Summary -->
+
+            <div class="checkout-summary">
+
+                <h2>Order Summary</h2>
+
+                <div id="checkout-items"></div>
+
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="checkout-subtotal">₹0</span>
+                </div>
+
+                <div class="summary-row">
+                    <span>Delivery</span>
+                    <span id="checkout-delivery">₹0</span>
+                </div>
+
+                <div class="summary-total">
+
+                    <span>Total</span>
+
+                    <strong id="checkout-total">
+                        ₹0
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<script>
+
+const checkoutForm = document.getElementById("checkout-form");
+const checkoutItems = document.getElementById("checkout-items");
+const checkoutSubtotal = document.getElementById("checkout-subtotal");
+const checkoutDelivery = document.getElementById("checkout-delivery");
+const checkoutTotal = document.getElementById("checkout-total");
+
+
+const cart = JSON.parse(
+    localStorage.getItem("earthlyHerbelCart")
+) || [];
+
+
+function loadCheckout() {
+
+    if (cart.length === 0) {
+
+        checkoutItems.innerHTML = `
+            <p>
+                Your cart is empty.
+            </p>
+
+            <a
+                href="{{ url_for('main.shop') }}"
+                class="button button-primary"
+            >
+                Continue Shopping
+            </a>
+        `;
+
+        checkoutForm.style.display = "none";
+
+        return;
+    }
+
+
+    let subtotal = 0;
+
+    let itemsHTML = "";
+
+
+    cart.forEach(item => {
+
+        const itemTotal = item.price * item.quantity;
+
+        subtotal += itemTotal;
+
+        itemsHTML += `
+            <div class="checkout-item">
+
+                <div>
+                    <strong>${item.name}</strong>
+
+                    <p>
+                        ${item.quantity} × ₹${item.price}
+                    </p>
+                </div>
+
+                <strong>
+                    ₹${itemTotal}
+                </strong>
+
+            </div>
+        `;
+
+    });
+
+
+    const delivery = subtotal >= 999 ? 0 : 50;
+    const total = subtotal + delivery;
+
+
+    checkoutItems.innerHTML = itemsHTML;
+
+    checkoutSubtotal.textContent = `₹${subtotal}`;
+
+    checkoutDelivery.textContent =
+        delivery === 0 ? "Free" : `₹${delivery}`;
+
+    checkoutTotal.textContent = `₹${total}`;
+
+}
+
+
+checkoutForm.addEventListener("submit", async event => {
+
+    event.preventDefault();
+
+    if (cart.length === 0) {
+        alert("Your cart is empty.");
+        return;
+    }
+
+    const formData = new FormData(checkoutForm);
+
+    const orderData = {
+        name: formData.get("name"),
+        email: formData.get("email"),
+        phone: formData.get("phone"),
+        address: formData.get("address"),
+
+        items: cart.map(item => ({
+            id: item.id,
+            quantity: item.quantity
+        }))
+    };
+
+    try {
+
+        const response = await fetch(
+            "{{ url_for('main.create_order') }}",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(orderData)
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+
+            alert(
+                result.message ||
+                "Unable to place your order."
+            );
+
+            return;
+        }
+
+        localStorage.removeItem(
+            "earthlyHerbelCart"
+        );
+
+        window.location.href =
+            `/order-success/${result.order_id}`;
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Something went wrong. Please try again."
+        );
+    }
+});
+
+
+loadCheckout();
+
+</script>
+
+{% endblock %}
