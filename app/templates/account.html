@@ -26,6 +26,7 @@ My Account | EarthlyHerbel
 
         </div>
 
+
         <div class="account-actions">
 
             <a
@@ -44,51 +45,86 @@ My Account | EarthlyHerbel
 
         </div>
 
+
         <div class="account-orders">
 
-            <h2>
-                My Orders
-            </h2>
+            <div class="account-orders-heading">
+
+                <p class="eyebrow">
+                    Your order history
+                </p>
+
+                <h2>
+                    My Orders
+                </h2>
+
+            </div>
+
 
             {% if orders %}
 
-                {% for order in orders %}
+                <div class="orders-list">
 
-                <div class="account-order">
+                    {% for order in orders %}
 
-                    <div>
-                        <strong>
-                            Order #{{ order.id }}
-                        </strong>
+                    <div class="account-order">
 
-                        <p>
-                            {{ order.created_at }}
-                        </p>
+                        <div class="order-main">
+
+                            <h3>
+                                Order #{{ order.id }}
+                            </h3>
+
+                            <p>
+                                {{ order.created_at }}
+                            </p>
+
+                        </div>
+
+
+                        <div class="order-status">
+
+                            <span>
+                                Status
+                            </span>
+
+                            <strong>
+                                {{ order.status }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="order-total">
+
+                            <span>
+                                Total
+                            </span>
+
+                            <strong>
+                                ₹{{ order.total_amount }}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="order-address">
+
+                            <span>
+                                Delivery Address
+                            </span>
+
+                            <p>
+                                {{ order.shipping_address }}
+                            </p>
+
+                        </div>
+
                     </div>
 
-                    <div>
-                        <span>
-                            Status
-                        </span>
-
-                        <strong>
-                            {{ order.status }}
-                        </strong>
-                    </div>
-
-                    <div>
-                        <span>
-                            Total
-                        </span>
-
-                        <strong>
-                            ₹{{ order.total_amount }}
-                        </strong>
-                    </div>
+                    {% endfor %}
 
                 </div>
-
-                {% endfor %}
 
             {% else %}
 
@@ -99,7 +135,7 @@ My Account | EarthlyHerbel
                     </h2>
 
                     <p>
-                        Your completed orders will appear here.
+                        Your orders will appear here after you make a purchase.
                     </p>
 
                     <a
