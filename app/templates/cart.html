@@ -11,14 +11,21 @@ Your Cart | EarthlyHerbel
     <div class="container">
 
         <div class="section-heading">
-            <p class="eyebrow">Your shopping bag</p>
 
-            <h1>Your Cart</h1>
+            <p class="eyebrow">
+                Your shopping bag
+            </p>
+
+            <h1>
+                Your Cart
+            </h1>
 
             <p>
                 Review your selected products before checkout.
             </p>
+
         </div>
+
 
         <div id="cart-container"></div>
 
@@ -29,11 +36,15 @@ Your Cart | EarthlyHerbel
 
 <script>
 
-const cartContainer = document.getElementById("cart-container");
+const cartContainer =
+    document.getElementById("cart-container");
 
-let cart = JSON.parse(
-    localStorage.getItem("earthlyHerbelCart")
-) || [];
+
+let cart =
+    JSON.parse(
+        localStorage.getItem("earthlyHerbelCart")
+    ) || [];
+
 
 
 function renderCart() {
@@ -41,12 +52,16 @@ function renderCart() {
     if (cart.length === 0) {
 
         cartContainer.innerHTML = `
+
             <div class="empty-cart">
 
-                <h2>Your cart is empty</h2>
+                <h2>
+                    Your cart is empty
+                </h2>
 
                 <p>
-                    Add some products to begin your EarthlyHerbel ritual.
+                    Add some products to begin
+                    your EarthlyHerbel ritual.
                 </p>
 
                 <a
@@ -57,6 +72,7 @@ function renderCart() {
                 </a>
 
             </div>
+
         `;
 
         return;
@@ -65,19 +81,41 @@ function renderCart() {
 
     let subtotal = 0;
 
+    let originalTotal = 0;
+
     let itemsHTML = "";
 
 
     cart.forEach(item => {
 
-        const itemTotal = item.price * item.quantity;
+        const itemPrice =
+            Number(item.price) || 0;
+
+        const itemOriginalPrice =
+            Number(item.originalPrice) ||
+            itemPrice;
+
+        const quantity =
+            Number(item.quantity) || 1;
+
+
+        const itemTotal =
+            itemPrice * quantity;
+
+
+        const itemOriginalTotal =
+            itemOriginalPrice * quantity;
+
 
         subtotal += itemTotal;
+
+        originalTotal += itemOriginalTotal;
 
 
         itemsHTML += `
 
             <div class="cart-item">
+
 
                 <div class="cart-item-info">
 
@@ -86,7 +124,7 @@ function renderCart() {
                     </h2>
 
                     <p>
-                        ₹${item.price}
+                        ₹${itemPrice.toFixed(2)}
                     </p>
 
                 </div>
@@ -101,9 +139,11 @@ function renderCart() {
                         −
                     </button>
 
+
                     <span>
-                        ${item.quantity}
+                        ${quantity}
                     </span>
+
 
                     <button
                         type="button"
@@ -117,7 +157,7 @@ function renderCart() {
 
                 <div class="cart-item-total">
 
-                    ₹${itemTotal}
+                    ₹${itemTotal.toFixed(2)}
 
                 </div>
 
@@ -137,14 +177,27 @@ function renderCart() {
     });
 
 
-    const delivery = subtotal >= 999 ? 0 : 50;
+    const savings =
+        Math.max(
+            0,
+            originalTotal - subtotal
+        );
 
-    const total = subtotal + delivery;
+
+    const delivery =
+        subtotal >= 999
+            ? 0
+            : 50;
+
+
+    const total =
+        subtotal + delivery;
 
 
     cartContainer.innerHTML = `
 
         <div class="cart-layout">
+
 
             <div class="cart-items">
 
@@ -159,39 +212,94 @@ function renderCart() {
                     Order Summary
                 </h2>
 
+
                 <div class="summary-row">
-                    <span>Subtotal</span>
-                    <span>₹${subtotal}</span>
+
+                    <span>
+                        Original Price
+                    </span>
+
+                    <span>
+                        ₹${originalTotal.toFixed(2)}
+                    </span>
+
                 </div>
 
 
                 <div class="summary-row">
-                    <span>Delivery</span>
+
                     <span>
-                        ${delivery === 0 ? "Free" : "₹" + delivery}
+                        Subtotal
                     </span>
+
+                    <span>
+                        ₹${subtotal.toFixed(2)}
+                    </span>
+
+                </div>
+
+
+                <div class="summary-row">
+
+                    <span>
+                        You Save
+                    </span>
+
+                    <span>
+                        ₹${savings.toFixed(2)}
+                    </span>
+
+                </div>
+
+
+                <div class="summary-row">
+
+                    <span>
+                        Delivery
+                    </span>
+
+                    <span>
+
+                        ${
+                            delivery === 0
+                                ? "Free"
+                                : "₹" + delivery
+                        }
+
+                    </span>
+
                 </div>
 
 
                 <div class="summary-total">
 
-                    <span>Total</span>
+                    <span>
+                        Total
+                    </span>
 
                     <strong>
-                        ₹${total}
+                        ₹${total.toFixed(2)}
                     </strong>
 
                 </div>
 
 
                 <a
-                href="{{ url_for('main.checkout') }}"
-                class="button button-primary checkout-button"
+                    href="{{ url_for('main.checkout') }}"
+                    class="button button-primary checkout-button"
                 >
-                Proceed to Checkout
+                    Proceed to Checkout
                 </a>
-                
-                </div>
+
+
+                <a
+                    href="{{ url_for('main.shop') }}"
+                    class="button button-secondary"
+                >
+                    Continue Shopping
+                </a>
+
+            </div>
 
         </div>
 
@@ -200,11 +308,18 @@ function renderCart() {
 }
 
 
-function changeQuantity(productId, change) {
 
-    const item = cart.find(
-        product => product.id === productId
-    );
+function changeQuantity(
+    productId,
+    change
+) {
+
+    const item =
+        cart.find(
+            product =>
+                product.id === productId
+        );
+
 
     if (!item) {
         return;
@@ -216,9 +331,11 @@ function changeQuantity(productId, change) {
 
     if (item.quantity <= 0) {
 
-        cart = cart.filter(
-            product => product.id !== productId
-        );
+        cart =
+            cart.filter(
+                product =>
+                    product.id !== productId
+            );
 
     }
 
@@ -227,6 +344,8 @@ function changeQuantity(productId, change) {
         "earthlyHerbelCart",
         JSON.stringify(cart)
     );
+
+
     updateCartCount();
 
 
@@ -235,23 +354,29 @@ function changeQuantity(productId, change) {
 }
 
 
+
 function removeItem(productId) {
 
-    cart = cart.filter(
-        product => product.id !== productId
-    );
+    cart =
+        cart.filter(
+            product =>
+                product.id !== productId
+        );
 
 
     localStorage.setItem(
         "earthlyHerbelCart",
         JSON.stringify(cart)
     );
+
+
     updateCartCount();
 
 
     renderCart();
 
 }
+
 
 
 renderCart();
