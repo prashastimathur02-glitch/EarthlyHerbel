@@ -11,7 +11,10 @@ Shop | EarthlyHerbel
     <div class="container">
 
         <div class="section-heading shop-heading">
-            <p class="eyebrow">EarthlyHerbel Collection</p>
+
+            <p class="eyebrow">
+                EarthlyHerbel Collection
+            </p>
 
             <h1>
                 Discover your natural care ritual
@@ -21,6 +24,7 @@ Shop | EarthlyHerbel
                 Explore thoughtfully crafted haircare and skincare
                 inspired by nature.
             </p>
+
         </div>
 
 
@@ -29,16 +33,31 @@ Shop | EarthlyHerbel
         <div class="shop-controls">
 
             <div class="shop-search">
+
                 <input
                     type="search"
+                    id="product-search"
                     placeholder="Search products..."
                     aria-label="Search products"
                 >
+
+                <button
+                    type="button"
+                    id="search-button"
+                    class="button button-primary"
+                >
+                    Search
+                </button>
+
             </div>
+
 
             <div class="shop-filter">
 
-                <select aria-label="Filter products by category">
+                <select
+                    id="category-filter"
+                    aria-label="Filter products by category"
+                >
 
                     <option value="all">
                         All Products
@@ -61,11 +80,18 @@ Shop | EarthlyHerbel
 
         <!-- Product Grid -->
 
-        <div class="product-grid">
+        <div
+            class="product-grid"
+            id="product-grid"
+        >
 
             {% for product in products %}
 
-            <article class="product-card">
+            <article
+                class="product-card"
+                data-name="{{ product.name|lower }}"
+                data-category="{{ product.category|lower }}"
+            >
 
                 <div class="product-image">
 
@@ -86,9 +112,11 @@ Shop | EarthlyHerbel
                         {{ product.name }}
                     </h2>
 
+
                     <div class="product-rating">
                         ★ {{ product.rating }}
                     </div>
+
 
                     <div class="product-price">
 
@@ -96,11 +124,16 @@ Shop | EarthlyHerbel
                             ₹{{ product.price }}
                         </span>
 
+                        {% if product.original_price > product.price %}
+
                         <span class="original-price">
                             ₹{{ product.original_price }}
                         </span>
 
+                        {% endif %}
+
                     </div>
+
 
                     {% if product.stock > 0 %}
 
@@ -116,10 +149,12 @@ Shop | EarthlyHerbel
 
                     {% endif %}
 
+
                     <a
                     href="{{ url_for('main.product_detail', product_id=product.id) }}"
                     class="button button-primary product-button"
-                    >View Product
+                    >
+                    View Product
                 </a>
 
                 </div>
@@ -128,10 +163,131 @@ Shop | EarthlyHerbel
 
             {% endfor %}
 
+
+            <!-- No Results -->
+
+            <div
+                id="no-products-message"
+                style="display: none;"
+            >
+
+                <p>
+                    No products found.
+                </p>
+
+            </div>
+
         </div>
 
     </div>
 
 </section>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput =
+        document.getElementById("product-search");
+
+    const searchButton =
+        document.getElementById("search-button");
+
+    const categoryFilter =
+        document.getElementById("category-filter");
+
+    const productCards =
+        document.querySelectorAll(".product-card");
+
+    const noProductsMessage =
+        document.getElementById("no-products-message");
+
+
+    function filterProducts() {
+
+        const searchText =
+            searchInput.value.trim().toLowerCase();
+
+        const selectedCategory =
+            categoryFilter.value.toLowerCase();
+
+        let visibleProducts = 0;
+
+
+        productCards.forEach(function (card) {
+
+            const productName =
+                card.dataset.name || "";
+
+            const productCategory =
+                card.dataset.category || "";
+
+
+            const matchesSearch =
+                productName.includes(searchText);
+
+
+            const matchesCategory =
+                selectedCategory === "all" ||
+                productCategory === selectedCategory;
+
+
+            if (matchesSearch && matchesCategory) {
+
+                card.style.display = "";
+
+                visibleProducts++;
+
+            } else {
+
+                card.style.display = "none";
+
+            }
+
+        });
+
+
+        if (visibleProducts === 0) {
+
+            noProductsMessage.style.display = "block";
+
+        } else {
+
+            noProductsMessage.style.display = "none";
+
+        }
+
+    }
+
+
+    searchButton.addEventListener(
+        "click",
+        filterProducts
+    );
+
+
+    categoryFilter.addEventListener(
+        "change",
+        filterProducts
+    );
+
+
+    searchInput.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key === "Enter") {
+
+                filterProducts();
+
+            }
+
+        }
+    );
+
+});
+
+</script>
 
 {% endblock %}

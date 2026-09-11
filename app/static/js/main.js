@@ -40,22 +40,15 @@ if (addToCartButton) {
 
     addToCartButton.addEventListener("click", () => {
 
-        const product = {
-
-            id: Number(
-                addToCartButton.dataset.productId
-            ),
-
-            name:
-                addToCartButton.dataset.productName,
-
-            price: Number(
-                addToCartButton.dataset.productPrice
-            ),
-
-            quantity: getSelectedQuantity()
-
-        };
+      const product = {
+    id: Number(addToCartButton.dataset.productId),
+    name: addToCartButton.dataset.productName,
+    price: Number(addToCartButton.dataset.productPrice),
+    originalPrice: Number(
+        addToCartButton.dataset.productOriginalPrice
+    ),
+    quantity: getSelectedQuantity()
+};
 
 
         if (product.quantity < 1) {
