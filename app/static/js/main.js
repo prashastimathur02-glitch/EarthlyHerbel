@@ -1,72 +1,200 @@
-const mobileMenuButton = document.getElementById("mobile-menu-button");
-const mobileNav = document.getElementById("mobile-nav");
+// =========================================================
+// MOBILE MENU
+// =========================================================
+
+const mobileMenuButton =
+    document.getElementById("mobile-menu-button");
+
+const mobileNav =
+    document.getElementById("mobile-nav");
+
 
 if (mobileMenuButton && mobileNav) {
+
     mobileMenuButton.addEventListener("click", () => {
-        const isOpen = mobileNav.classList.toggle("active");
+
+        const isOpen =
+            mobileNav.classList.toggle("active");
 
         mobileMenuButton.setAttribute(
             "aria-expanded",
             isOpen.toString()
         );
 
-        mobileMenuButton.textContent = isOpen ? "✕" : "☰";
+        mobileMenuButton.textContent =
+            isOpen ? "✕" : "☰";
     });
+
 }
-// Add product to cart
-const addToCartButton = document.getElementById("add-to-cart");
+
+
+// =========================================================
+// ADD PRODUCT TO CART
+// =========================================================
+
+const addToCartButton =
+    document.getElementById("add-to-cart");
+
 
 if (addToCartButton) {
+
     addToCartButton.addEventListener("click", () => {
 
         const product = {
-            id: Number(addToCartButton.dataset.productId),
-            name: addToCartButton.dataset.productName,
-            price: Number(addToCartButton.dataset.productPrice),
-            quantity: 1
+
+            id: Number(
+                addToCartButton.dataset.productId
+            ),
+
+            name:
+                addToCartButton.dataset.productName,
+
+            price: Number(
+                addToCartButton.dataset.productPrice
+            ),
+
+            quantity: getSelectedQuantity()
+
         };
 
-        let cart = JSON.parse(localStorage.getItem("earthlyHerbelCart")) || [];
 
-        const existingProduct = cart.find(
-            item => item.id === product.id
-        );
+        if (product.quantity < 1) {
+
+            alert("Please select a valid quantity.");
+
+            return;
+        }
+
+
+        let cart =
+            JSON.parse(
+                localStorage.getItem(
+                    "earthlyHerbelCart"
+                )
+            ) || [];
+
+
+        const existingProduct =
+            cart.find(
+                item => item.id === product.id
+            );
+
 
         if (existingProduct) {
-            existingProduct.quantity += 1;
+
+            existingProduct.quantity +=
+                product.quantity;
+
         } else {
+
             cart.push(product);
+
         }
+
 
         localStorage.setItem(
             "earthlyHerbelCart",
             JSON.stringify(cart)
         );
 
-        alert(`${product.name} added to cart!`);
+
+        updateCartCount();
+
+
+        alert(
+            `${product.name} added to cart!`
+        );
+
     });
+
 }
-// Update cart count
+
+
+// =========================================================
+// GET SELECTED QUANTITY
+// =========================================================
+
+function getSelectedQuantity() {
+
+    const quantityInput =
+        document.getElementById("quantity");
+
+
+    if (!quantityInput) {
+        return 1;
+    }
+
+
+    const quantity =
+        parseInt(
+            quantityInput.value
+        );
+
+
+    if (isNaN(quantity) || quantity < 1) {
+        return 1;
+    }
+
+
+    return quantity;
+
+}
+
+
+// =========================================================
+// UPDATE CART COUNT
+// =========================================================
+
 function updateCartCount() {
-    const cart = JSON.parse(
-        localStorage.getItem("earthlyHerbelCart")
-    ) || [];
 
-    const totalItems = cart.reduce(
-        (total, item) => total + item.quantity,
-        0
-    );
+    const cart =
+        JSON.parse(
+            localStorage.getItem(
+                "earthlyHerbelCart"
+            )
+        ) || [];
 
-    const cartCount = document.getElementById("cart-count");
-    const mobileCartCount = document.getElementById("mobile-cart-count");
+
+    const totalItems =
+        cart.reduce(
+            (total, item) =>
+                total + item.quantity,
+            0
+        );
+
+
+    const cartCount =
+        document.getElementById(
+            "cart-count"
+        );
+
+
+    const mobileCartCount =
+        document.getElementById(
+            "mobile-cart-count"
+        );
+
 
     if (cartCount) {
-        cartCount.textContent = totalItems;
+
+        cartCount.textContent =
+            totalItems;
+
     }
 
+
     if (mobileCartCount) {
-        mobileCartCount.textContent = totalItems;
+
+        mobileCartCount.textContent =
+            totalItems;
+
     }
+
 }
+
+
+// =========================================================
+// INITIAL CART COUNT
+// =========================================================
 
 updateCartCount();
