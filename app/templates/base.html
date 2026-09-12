@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -9,90 +10,54 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <meta
-        name="description"
-        content="EarthlyHerbel - Naturally rooted haircare and skincare."
-    >
-
-    <title>{% block title %}EarthlyHerbel{% endblock %}</title>
+    <title>
+        {% block title %}
+        EarthlyHerbel
+        {% endblock %}
+    </title>
 
     <link
         rel="stylesheet"
         href="{{ url_for('static', filename='css/style.css') }}"
     >
+
 </head>
+
 
 <body>
 
-    <!-- Header -->
-    <header class="site-header">
 
-        <div class="container navbar">
+<!-- =========================================
+     HEADER
+     ========================================= -->
 
-            <!-- Brand -->
-            <a
-                href="{{ url_for('main.home') }}"
-                class="brand"
-            >
-                EarthlyHerbel
-            </a>
+<header class="site-header">
 
-            <!-- Desktop Navigation -->
-            <nav class="nav-links">
+    <div class="container navbar">
 
-                <a href="{{ url_for('main.home') }}">
-                    Home
-                </a>
 
-                <a href="#">
-                    Haircare
-                </a>
+        <!-- Brand -->
 
-                <a href="#">
-                    Skincare
-                </a>
+        <a
+            href="{{ url_for('main.home') }}"
+            class="brand"
+        >
+            EarthlyHerbel
+        </a>
 
-                <a href="#">
-                    About
-                </a>
 
-                <a href="#">
-                    Contact
-                </a>
+        <!-- =====================================
+             DESKTOP NAVIGATION
+             ===================================== -->
 
-            </nav>
-
-            <!-- Actions -->
-            <div class="nav-actions">
-
-                <a href="#" aria-label="Search">
-                    Search
-                </a>
-
-                <a href="{{ url_for('main.cart') }}">
-                    Cart (<span id="mobile-cart-count">0</span>)
-                </a>
-
-            </div>
-
-            <!-- Mobile Menu Button -->
-            <button
-                class="mobile-menu-button"
-                type="button"
-                aria-label="Open navigation menu"
-                aria-expanded="false"
-                id="mobile-menu-button"
-            >
-                ☰
-            </button>
-
-        </div>
-
-        <!-- Mobile Navigation -->
-        <nav class="mobile-nav" id="mobile-nav">
+        <nav class="nav-links">
 
             <a href="{{ url_for('main.home') }}">
                 Home
+            </a>
+
+            <a href="{{ url_for('main.shop') }}">
+                Shop
             </a>
 
             <a href="#">
@@ -111,42 +76,295 @@
                 Contact
             </a>
 
-            <a href="#">
-                Search
-            </a>
 
-            <a href="{{ url_for('main.cart') }}">
-                Cart (<span id="cart-count">0</span>)
-            </a>
+            {% if current_user.is_authenticated %}
+
+                <a href="{{ url_for('main.account') }}">
+                    My Account
+                </a>
+
+
+                {% if current_user.is_admin %}
+
+                    <a
+                        href="{{ url_for('main.admin_dashboard') }}"
+                    >
+                        Admin Portal
+                    </a>
+
+                {% endif %}
+
+
+                <a href="{{ url_for('main.logout') }}">
+                    Logout
+                </a>
+
+            {% else %}
+
+                <a href="{{ url_for('main.login') }}">
+                    Login
+                </a>
+
+                <a href="{{ url_for('main.register') }}">
+                    Register
+                </a>
+
+            {% endif %}
 
         </nav>
 
-    </header>
+
+        <!-- =====================================
+             RIGHT SIDE
+             ===================================== -->
+
+        <div class="nav-actions">
 
 
-    <!-- Main Content -->
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+            {% if current_user.is_authenticated %}
+
+                <span class="nav-user">
+
+                    Hello,
+                    {{ current_user.name }}
+
+                </span>
+
+            {% else %}
+
+                <a href="{{ url_for('main.login') }}">
+                    Login
+                </a>
+
+            {% endif %}
 
 
-    <!-- Footer -->
-    <footer class="site-footer">
+            <a href="{{ url_for('main.cart') }}">
 
-        <div class="container">
+                Cart
+                (
+                <span id="mobile-cart-count">
+                    0
+                </span>
+                )
 
-            <p>
-                &copy; 2026 EarthlyHerbel. All rights reserved.
-            </p>
+            </a>
 
         </div>
 
-    </footer>
 
-    <!-- JavaScript -->
-    <script
-        src="{{ url_for('static', filename='js/main.js') }}"
-    ></script>
+        <!-- =====================================
+             MOBILE MENU BUTTON
+             ===================================== -->
+
+        <button
+            type="button"
+            class="mobile-menu-button"
+            id="mobile-menu-button"
+            aria-label="Open navigation menu"
+            aria-expanded="false"
+        >
+            ☰
+        </button>
+
+    </div>
+
+
+    <!-- =========================================
+         MOBILE NAVIGATION
+         ========================================= -->
+
+    <nav
+        class="mobile-nav"
+        id="mobile-nav"
+    >
+
+        <a href="{{ url_for('main.home') }}">
+            Home
+        </a>
+
+        <a href="{{ url_for('main.shop') }}">
+            Shop
+        </a>
+
+        <a href="#">
+            Haircare
+        </a>
+
+        <a href="#">
+            Skincare
+        </a>
+
+        <a href="#">
+            About
+        </a>
+
+        <a href="#">
+            Contact
+        </a>
+
+
+        {% if current_user.is_authenticated %}
+
+            <div class="mobile-user">
+
+                Hello,
+                {{ current_user.name }}
+
+            </div>
+
+
+            <a href="{{ url_for('main.account') }}">
+                My Account
+            </a>
+
+
+            {% if current_user.is_admin %}
+
+                <a
+                    href="{{ url_for('main.admin_dashboard') }}"
+                >
+                    Admin Portal
+                </a>
+
+            {% endif %}
+
+
+            <a href="{{ url_for('main.logout') }}">
+                Logout
+            </a>
+
+        {% else %}
+
+            <a href="{{ url_for('main.login') }}">
+                Login
+            </a>
+
+            <a href="{{ url_for('main.register') }}">
+                Register
+            </a>
+
+        {% endif %}
+
+
+        <a href="{{ url_for('main.cart') }}">
+            Cart
+            (
+            <span id="mobile-cart-count-mobile">
+                0
+            </span>
+            )
+        </a>
+
+    </nav>
+
+</header>
+
+
+<!-- =========================================
+     MAIN CONTENT
+     ========================================= -->
+
+<main>
+
+    {% block content %}
+
+    {% endblock %}
+
+</main>
+
+
+<!-- =========================================
+     FOOTER
+     ========================================= -->
+
+<footer class="site-footer">
+
+    <div class="container">
+
+        <p>
+            © 2026 EarthlyHerbel.
+            All rights reserved.
+        </p>
+
+    </div>
+
+</footer>
+
+
+<!-- =========================================
+     JAVASCRIPT
+     ========================================= -->
+
+<script
+    src="{{ url_for('static', filename='js/main.js') }}"
+></script>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const mobileCartCount =
+            document.getElementById(
+                "mobile-cart-count-mobile"
+            );
+
+        const desktopCartCount =
+            document.getElementById(
+                "mobile-cart-count"
+            );
+
+
+        function updateHeaderCartCount() {
+
+            const cart =
+                JSON.parse(
+                    localStorage.getItem(
+                        "earthlyHerbelCart"
+                    )
+                ) || [];
+
+
+            const totalItems =
+                cart.reduce(
+                    function (total, item) {
+
+                        return total +
+                            Number(item.quantity || 0);
+
+                    },
+                    0
+                );
+
+
+            if (desktopCartCount) {
+
+                desktopCartCount.textContent =
+                    totalItems;
+
+            }
+
+
+            if (mobileCartCount) {
+
+                mobileCartCount.textContent =
+                    totalItems;
+
+            }
+
+        }
+
+
+        updateHeaderCartCount();
+
+    }
+);
+
+</script>
+
 
 </body>
 

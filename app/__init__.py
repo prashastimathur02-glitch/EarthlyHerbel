@@ -15,10 +15,17 @@ login_manager.login_view = "main.login"
 
 class User(UserMixin):
 
-    def __init__(self, user_id, name, email):
+    def __init__(
+        self,
+        user_id,
+        name,
+        email,
+        is_admin=False
+    ):
         self.id = user_id
         self.name = name
         self.email = email
+        self.is_admin = bool(is_admin)
 
 
 @login_manager.user_loader
@@ -32,7 +39,11 @@ def load_user(user_id):
 
             cursor.execute(
                 """
-                SELECT id, name, email
+                SELECT
+                    id,
+                    name,
+                    email,
+                    is_admin
                 FROM customers
                 WHERE id = %s
                 """,
@@ -50,7 +61,8 @@ def load_user(user_id):
     return User(
         row[0],
         row[1],
-        row[2]
+        row[2],
+        row[3]
     )
 
 
