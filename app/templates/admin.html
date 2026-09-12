@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+
+{% block title %}
+Admin Dashboard | EarthlyHerbel
+{% endblock %}
+
+{% block content %}
+
+<section class="admin-page">
+
+    <div class="container">
+
+        <!-- Page Heading -->
+
+        <div class="section-heading">
+
+            <p class="eyebrow">
+                EarthlyHerbel Administration
+            </p>
+
+            <h1>
+                Admin Dashboard
+            </h1>
+
+            <p>
+                Manage products, inventory, orders and customers.
+            </p>
+
+        </div>
+
+
+        <!-- Dashboard Statistics -->
+
+        <div class="admin-stats">
+
+            <div class="admin-stat">
+                <span>Products</span>
+                <strong>{{ products|length }}</strong>
+            </div>
+
+            <div class="admin-stat">
+                <span>Customers</span>
+                <strong>{{ customer_count }}</strong>
+            </div>
+
+            <div class="admin-stat">
+                <span>Orders</span>
+                <strong>{{ order_count }}</strong>
+            </div>
+
+            <div class="admin-stat">
+                <span>Revenue</span>
+                <strong>₹{{ revenue }}</strong>
+            </div>
+
+        </div>
+
+
+        <!-- =========================================
+             PRODUCTS
+             ========================================= -->
+
+        <div class="admin-section">
+
+            <div class="admin-section-header">
+
+                <div>
+
+                    <p class="eyebrow">
+                        Catalogue
+                    </p>
+
+                    <h2>
+                        Products
+                    </h2>
+
+                </div>
+
+
+                <a
+                    href="{{ url_for('main.admin_add_product') }}"
+                    class="button button-primary"
+                >
+                    + Add Product
+                </a>
+
+            </div>
+
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Original Price</th>
+                            <th>Rating</th>
+                            <th>Stock</th>
+                            <th>Action</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for product in products %}
+
+                        <tr>
+
+                            <td>
+                                {{ product.id }}
+                            </td>
+
+                            <td>
+                                <strong>
+                                    {{ product.name }}
+                                </strong>
+                            </td>
+
+                            <td>
+                                {{ product.category }}
+                            </td>
+
+                            <td>
+                                ₹{{ product.price }}
+                            </td>
+
+                            <td>
+                                ₹{{ product.original_price }}
+                            </td>
+
+                            <td>
+                                ★ {{ product.rating }}
+                            </td>
+
+                            <td>
+
+                                {% if product.stock == 0 %}
+
+                                    <span
+                                        class="stock-out"
+                                    >
+                                        Out of stock
+                                    </span>
+
+                                {% elif product.stock <= 5 %}
+
+                                    <span
+                                        class="stock-low"
+                                    >
+                                        {{ product.stock }}
+                                        (Low)
+                                    </span>
+
+                                {% else %}
+
+                                    <span>
+                                        {{ product.stock }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                <a
+                                    href="{{ url_for(
+                                        'main.admin_edit_product',
+                                        product_id=product.id
+                                    ) }}"
+                                    class="admin-edit-link"
+                                >
+                                    Edit
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+
+                        {% else %}
+
+                        <tr>
+
+                            <td colspan="8">
+                                No products found.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================================
+             ORDERS
+             ========================================= -->
+
+        <div class="admin-section">
+
+            <div class="admin-section-header">
+
+                <div>
+
+                    <p class="eyebrow">
+                        Sales
+                    </p>
+
+                    <h2>
+                        Orders
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Order
+                            </th>
+
+                            <th>
+                                Customer
+                            </th>
+
+                            <th>
+                                Email
+                            </th>
+
+                            <th>
+                                Total
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Date
+                            </th>
+
+                            <th>
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for order in orders %}
+
+                        <tr>
+
+                            <td>
+                                #{{ order[0] }}
+                            </td>
+
+                            <td>
+                                {{ order[1] }}
+                            </td>
+
+                            <td>
+                                {{ order[2] }}
+                            </td>
+
+                            <td>
+                                ₹{{ order[3] }}
+                            </td>
+
+                            <td>
+                                {{ order[4] }}
+                            </td>
+
+                            <td>
+                                {{ order[5] }}
+                            </td>
+
+                            <td>
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'main.admin_update_order_status',
+                                        order_id=order[0]
+                                    ) }}"
+                                >
+
+                                    <select
+                                        name="status"
+                                        required
+                                    >
+
+                                        <option
+                                            value="Pending"
+                                            {% if order[4] == "Pending" %}
+                                            selected
+                                            {% endif %}
+                                        >
+                                            Pending
+                                        </option>
+
+                                        <option
+                                            value="Confirmed"
+                                            {% if order[4] == "Confirmed" %}
+                                            selected
+                                            {% endif %}
+                                        >
+                                            Confirmed
+                                        </option>
+
+                                        <option
+                                            value="Packed"
+                                            {% if order[4] == "Packed" %}
+                                            selected
+                                            {% endif %}
+                                        >
+                                            Packed
+                                        </option>
+
+                                        <option
+                                            value="Shipped"
+                                            {% if order[4] == "Shipped" %}
+                                            selected
+                                            {% endif %}
+                                        >
+                                            Shipped
+                                        </option>
+
+                                        <option
+                                            value="Delivered"
+                                            {% if order[4] == "Delivered" %}
+                                            selected
+                                            {% endif %}
+                                        >
+                                            Delivered
+                                        </option>
+
+                                        <option
+                                            value="Cancelled"
+                                            {% if order[4] == "Cancelled" %}
+                                            selected
+                                            {% endif %}
+                                        >
+                                            Cancelled
+                                        </option>
+
+                                    </select>
+
+
+                                    <button
+                                        type="submit"
+                                        class="button button-primary"
+                                    >
+                                        Update
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
+
+
+                        {% else %}
+
+                        <tr>
+
+                            <td colspan="7">
+                                No orders found.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

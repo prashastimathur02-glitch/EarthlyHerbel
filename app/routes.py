@@ -146,7 +146,6 @@ def product_detail(product_id):
 
 
 @main.route("/register", methods=["GET", "POST"])
-@main.route("/register", methods=["GET", "POST"])
 def register():
 
     if request.method == "GET":
@@ -286,15 +285,16 @@ def login():
             cursor.execute(
                 """
                 SELECT
-                    id,
-                    name,
-                    email,
-                    password_hash
+                id,
+                name,
+                email,
+                password_hash,
+                is_admin
                 FROM customers
                 WHERE email = %s
-                """,
-                (email,)
-            )
+                  """,
+                  (email,)
+                  )
 
             row = cursor.fetchone()
 
@@ -316,15 +316,16 @@ def login():
         )
 
     user = User(
-        row[0],
-        row[1],
-        row[2]
-    )
+    row[0],
+    row[1],
+    row[2],
+    row[4]
+)
 
     login_user(user)
-
+    if user.is_admin:
+        return redirect(url_for("main.admin_dashboard"))
     return redirect(url_for("main.account"))
-
 
 @main.route("/logout")
 @login_required
@@ -645,4 +646,438 @@ def order_success(order_id):
         "order_success.html",
         order=order,
         customer=customer
+    )
+# =========================================================
+# ADMIN DASHBOARD
+# =========================================================
+
+@main.route("/admin")
+@login_required
+def admin_dashboard():
+
+    if not current_user.is_admin:
+        return "Access denied", 403
+
+    connection = get_db_connection()
+
+    try:
+
+        with connection.cursor() as cursor:
+
+            # -------------------------------------------------
+            # Products
+            # -------------------------------------------------
+
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    name,
+                    category,
+                    price,
+                    original_price,
+                    rating,
+                    stock
+                FROM products
+                ORDER BY id DESC
+                """
+            )
+
+            product_rows = cursor.fetchall()
+
+
+            # -------------------------------------------------
+            # Customers
+            # -------------------------------------------------
+
+            cursor.execute(
+                """
+                SELECT COUNT(*)
+                FROM customers
+                """
+            )
+
+            customer_count = cursor.fetchone()[0]
+
+
+            # -------------------------------------------------
+            # Orders
+            # -------------------------------------------------
+
+            cursor.execute(
+                """
+                SELECT
+                    o.id,
+                    c.name,
+                    c.email,
+                    o.total_amount,
+                    o.status,
+                    o.created_at
+                FROM orders o
+                JOIN customers c
+                    ON o.customer_id = c.id
+                ORDER BY o.created_at DESC
+                """
+            )
+
+            orders = cursor.fetchall()
+
+
+            # -------------------------------------------------
+            # Order count
+            # -------------------------------------------------
+
+            cursor.execute(
+                """
+                SELECT COUNT(*)
+                FROM orders
+                """
+            )
+
+            order_count = cursor.fetchone()[0]
+
+
+            # -------------------------------------------------
+            # Revenue
+            # -------------------------------------------------
+
+            cursor.execute(
+                """
+                SELECT COALESCE(
+                    SUM(total_amount),
+                    0
+                )
+                FROM orders
+                WHERE status != 'Cancelled'
+                """
+            )
+
+            revenue = cursor.fetchone()[0]
+
+
+    finally:
+        connection.close()
+
+
+    products = []
+
+    for row in product_rows:
+
+        products.append({
+            "id": row[0],
+            "name": row[1],
+            "category": row[2],
+            "price": float(row[3]),
+            "original_price": float(row[4]),
+            "rating": float(row[5]),
+            "stock": row[6]
+        })
+
+
+    return render_template(
+        "admin.html",
+        products=products,
+        orders=orders,
+        customer_count=customer_count,
+        order_count=order_count,
+        revenue=float(revenue)
+    )
+# =========================================================
+# ADMIN - UPDATE ORDER STATUS
+# =========================================================
+
+@main.route(
+    "/admin/orders/<int:order_id>/status",
+    methods=["POST"]
+)
+@login_required
+def admin_update_order_status(order_id):
+
+    # Only admin users can update order status
+    if not current_user.is_admin:
+        return "Access denied", 403
+
+    status = request.form.get("status", "").strip()
+
+    allowed_statuses = [
+        "Pending",
+        "Confirmed",
+        "Packed",
+        "Shipped",
+        "Delivered",
+        "Cancelled"
+    ]
+
+    if status not in allowed_statuses:
+        return "Invalid order status", 400
+
+    connection = get_db_connection()
+
+    try:
+
+        with connection.cursor() as cursor:
+
+            cursor.execute(
+                """
+                UPDATE orders
+                SET status = %s
+                WHERE id = %s
+                """,
+                (
+                    status,
+                    order_id
+                )
+            )
+
+            if cursor.rowcount != 1:
+                connection.rollback()
+                return "Order not found", 404
+
+        connection.commit()
+
+    except Exception as error:
+
+        connection.rollback()
+
+        print(
+            "Order status update error:",
+            error
+        )
+
+        return "Unable to update order status", 500
+
+    finally:
+        connection.close()
+
+    return redirect(
+        url_for("main.admin_dashboard")
+    )
+# =========================================================
+# ADMIN - ADD PRODUCT
+# =========================================================
+
+@main.route("/admin/products/add", methods=["GET", "POST"])
+@login_required
+def admin_add_product():
+
+    if not current_user.is_admin:
+        return "Access denied", 403
+
+    if request.method == "GET":
+
+        return render_template(
+            "admin_add_product.html"
+        )
+
+    name = request.form.get("name", "").strip()
+    category = request.form.get("category", "").strip()
+    price = request.form.get("price", "0")
+    original_price = request.form.get("original_price", "0")
+    rating = request.form.get("rating", "0")
+    stock = request.form.get("stock", "0")
+    description = request.form.get("description", "").strip()
+    ingredients = request.form.get("ingredients", "").strip()
+    benefits = request.form.get("benefits", "").strip()
+    how_to_use = request.form.get("how_to_use", "").strip()
+
+    if not name or not category or not description:
+        return "Please fill all required fields", 400
+
+    connection = get_db_connection()
+
+    try:
+
+        with connection.cursor() as cursor:
+
+            cursor.execute(
+                """
+                INSERT INTO products
+                (
+                    name,
+                    category,
+                    price,
+                    original_price,
+                    rating,
+                    stock,
+                    description,
+                    ingredients,
+                    benefits,
+                    how_to_use
+                )
+                VALUES
+                (
+                    %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s
+                )
+                """,
+                (
+                    name,
+                    category,
+                    price,
+                    original_price,
+                    rating,
+                    stock,
+                    description,
+                    ingredients,
+                    benefits,
+                    how_to_use
+                )
+            )
+
+        connection.commit()
+
+    except Exception as error:
+
+        connection.rollback()
+
+        print("Add product error:", error)
+
+        return f"Database error: {error}", 500
+
+    finally:
+        connection.close()
+
+    return redirect(
+        url_for("main.admin_dashboard")
+    )
+
+
+# =========================================================
+# ADMIN - EDIT PRODUCT
+# =========================================================
+
+@main.route(
+    "/admin/products/edit/<int:product_id>",
+    methods=["GET", "POST"]
+)
+@login_required
+def admin_edit_product(product_id):
+
+    if not current_user.is_admin:
+        return "Access denied", 403
+
+    connection = get_db_connection()
+
+    try:
+
+        with connection.cursor() as cursor:
+
+            if request.method == "GET":
+
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        name,
+                        category,
+                        price,
+                        original_price,
+                        rating,
+                        stock,
+                        description,
+                        ingredients,
+                        benefits,
+                        how_to_use
+                    FROM products
+                    WHERE id = %s
+                    """,
+                    (product_id,)
+                )
+
+                product = cursor.fetchone()
+
+                if product is None:
+                    return "Product not found", 404
+
+                return render_template(
+                    "admin_edit_product.html",
+                    product=product
+                )
+
+
+            name = request.form.get("name", "").strip()
+            category = request.form.get("category", "").strip()
+            price = request.form.get("price", "0")
+            original_price = request.form.get(
+                "original_price",
+                "0"
+            )
+            rating = request.form.get(
+                "rating",
+                "0"
+            )
+            stock = request.form.get(
+                "stock",
+                "0"
+            )
+            description = request.form.get(
+                "description",
+                ""
+            ).strip()
+            ingredients = request.form.get(
+                "ingredients",
+                ""
+            ).strip()
+            benefits = request.form.get(
+                "benefits",
+                ""
+            ).strip()
+            how_to_use = request.form.get(
+                "how_to_use",
+                ""
+            ).strip()
+
+            if not name or not category or not description:
+                return "Please fill all required fields", 400
+
+            cursor.execute(
+                """
+                UPDATE products
+                SET
+                    name = %s,
+                    category = %s,
+                    price = %s,
+                    original_price = %s,
+                    rating = %s,
+                    stock = %s,
+                    description = %s,
+                    ingredients = %s,
+                    benefits = %s,
+                    how_to_use = %s
+                WHERE id = %s
+                """,
+                (
+                    name,
+                    category,
+                    price,
+                    original_price,
+                    rating,
+                    stock,
+                    description,
+                    ingredients,
+                    benefits,
+                    how_to_use,
+                    product_id
+                )
+            )
+
+            if cursor.rowcount != 1:
+                connection.rollback()
+                return "Product not found", 404
+
+        connection.commit()
+
+    except Exception as error:
+
+        connection.rollback()
+
+        print("Edit product error:", error)
+
+        return f"Database error: {error}", 500
+
+    finally:
+        connection.close()
+
+    return redirect(
+        url_for("main.admin_dashboard")
     )
