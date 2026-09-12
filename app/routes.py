@@ -651,6 +651,10 @@ def order_success(order_id):
 # ADMIN DASHBOARD
 # =========================================================
 
+# =========================================================
+# ADMIN DASHBOARD
+# =========================================================
+
 @main.route("/admin")
 @login_required
 def admin_dashboard():
@@ -724,7 +728,7 @@ def admin_dashboard():
 
 
             # -------------------------------------------------
-            # Order count
+            # Order Count
             # -------------------------------------------------
 
             cursor.execute(
@@ -755,33 +759,70 @@ def admin_dashboard():
             revenue = cursor.fetchone()[0]
 
 
+            # -------------------------------------------------
+            # Low Stock Count
+            # -------------------------------------------------
+
+            cursor.execute(
+                """
+                SELECT COUNT(*)
+                FROM products
+                WHERE stock <= 5
+                """
+            )
+
+            low_stock_count = cursor.fetchone()[0]
+
+
     finally:
         connection.close()
 
+
+    # ---------------------------------------------------------
+    # Convert product rows into dictionaries
+    # ---------------------------------------------------------
 
     products = []
 
     for row in product_rows:
 
         products.append({
+
             "id": row[0],
+
             "name": row[1],
+
             "category": row[2],
+
             "price": float(row[3]),
+
             "original_price": float(row[4]),
+
             "rating": float(row[5]),
+
             "stock": row[6]
+
         })
 
 
     return render_template(
+
         "admin.html",
+
         products=products,
+
         orders=orders,
+
         customer_count=customer_count,
+
         order_count=order_count,
-        revenue=float(revenue)
+
+        revenue=float(revenue),
+
+        low_stock_count=low_stock_count
+
     )
+
 # =========================================================
 # ADMIN - UPDATE ORDER STATUS
 # =========================================================
@@ -1074,6 +1115,83 @@ def admin_edit_product(product_id):
         print("Edit product error:", error)
 
         return f"Database error: {error}", 500
+
+    finally:
+        connection.close()
+
+    return redirect(
+        url_for("main.admin_dashboard")
+    )
+# =========================================================
+# ADMIN - DELETE PRODUCT
+# =========================================================
+
+@main.route(
+    "/admin/products/delete/<int:product_id>",
+    methods=["POST"]
+)
+@login_required
+def admin_delete_product(product_id):
+
+    if not current_user.is_admin:
+        return "Access denied", 403
+
+    connection = get_db_connection()
+
+    try:
+
+        with connection.cursor() as cursor:
+
+            # Check whether the product has been used in any order
+            cursor.execute(
+                """
+                SELECT 1
+                FROM order_items
+                WHERE product_id = %s
+                LIMIT 1
+                """,
+                (product_id,)
+            )
+
+            existing_order_item = cursor.fetchone()
+
+            if existing_order_item:
+
+                connection.rollback()
+
+                return (
+                    "This product cannot be deleted because "
+                    "it already exists in an order.",
+                    400
+                )
+
+            # Delete the product
+            cursor.execute(
+                """
+                DELETE FROM products
+                WHERE id = %s
+                """,
+                (product_id,)
+            )
+
+            if cursor.rowcount != 1:
+
+                connection.rollback()
+
+                return "Product not found", 404
+
+        connection.commit()
+
+    except Exception as error:
+
+        connection.rollback()
+
+        print(
+            "Delete product error:",
+            error
+        )
+
+        return "Unable to delete product", 500
 
     finally:
         connection.close()
